@@ -1,5 +1,4 @@
 use clap::Parser;
-use std::collections::BTreeSet;
 
 #[derive(Parser)]
 struct Cli {
@@ -9,27 +8,24 @@ struct Cli {
 
 fn main() {
     let args = Cli::parse();
-    let mut blocked = BTreeSet::new();
+    let path = "/etc/hosts";
 
     if args.action == "block" {
-        blocked.insert(args.domain.to_string());
-    }
-    else if args.action == "unblock" {
-        blocked.remove(&args.domain);
-    }
-    else if args.action == "activate" {   
-        let mut file_content: String = std::fs::read_to_string("/etc/hosts").expect("failed to read /etc/hosts");
-        for item in blocked {
-            file_content.push_str("0.0.0.0 {item}\n::1 {item}\n");
+        let mut file_content = std::fs::read_to_string(path).expect("failed to read /etc/hosts");
+        if !file_content.contains(&args.domain) {
+            file_content.push_str(&format!("0.0.0.0 {}\n::1 {}\n", args.domain, args.domain));
+            std::fs::write(path, file_content).expect("failed to write to file");
         }
-    }
-    else if args.action == "deactivate" {
-        let mut file_content: String = std::fs::read_to_string("/etc/hosts").expect("failed to read /etc/hosts");
-        for item in blocked {
-            file_content.replace("0.0.0.0 {item}\n::1 {item}\n", "");
+    } else if args.action == "unblock" {
+        let file_content = std::fs::read_to_string(path).expect("failed to read /etc/hosts");
+        if file_content.contains(&args.domain) {
+            let modified = file_content
+                .replace(&format!("0.0.0.0 {}\n", args.domain), "")
+                .replace(&format!("::1 {}\n", args.domain), "");  
+
+            std::fs::write(path, modified).expect("failed to write to file");
         }
-    }
-    else {
+    } else {
         println!("Invalid command.");
     }
 }
