@@ -1,6 +1,7 @@
 use clap::Parser;
 
 #[derive(Parser)]
+#[command(author, version, about, long_about = include_str!("../README.md"))]
 struct Cli {
     action: String,
     domain: String,

@@ -2,6 +2,17 @@
 name = "blckr"
 version = "0.1.0"
 edition = "2024"
+description = "simple rust website blocker cli for linux systems"
+license = "MIT"
+repository = "https://github.com/adhanani05/blckr"
+readme = "README.md"
+categories = ["command-line-utilities"]
+keywords = ["hosts", "block", "focus", "productivity"]
 
 [dependencies]
 clap = { version = "4.5.46", features = ["derive"] }
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = "symbols"
